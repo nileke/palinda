@@ -98,7 +98,7 @@ func prophecy(question string, answer chan<- string) {
 	// Answer question or fortell a prophecy, in a given priority order
 	insultedAns, _ := regexp.MatchString("(?i)(fuck|damn|pussy)", question)
 	sassyAns, _ := regexp.MatchString("(?i)(could you|can you)", question)
-	giveAns, _ := regexp.MatchString("(?i)(what|could|answer)", question)
+	giveAns, _ := regexp.MatchString("(?i)(what|tell|answer|me)", question)
 	funnyAns, _ := regexp.MatchString("(?i)(ting goes skra|lava toes|lavatoes)", question)
 
 	if insultedAns {
