@@ -17,13 +17,13 @@ func main() {
 
 	const strings = 32
 	const producers = 4
-	const consumers = 2
+	const consumers = 4
 
 	before := time.Now()
 	ch := make(chan string)
 	wgp := new(sync.WaitGroup)
 	wgc := new(sync.WaitGroup)
-	wgp.Add(producers)
+	wgp.Add(consumers)
 	wgc.Add(strings) // All the strings printed by consumers.
 	for i := 0; i < producers; i++ {
 		go Produce("p"+strconv.Itoa(i), strings/producers, ch, wgp)
@@ -31,9 +31,9 @@ func main() {
 	for i := 0; i < consumers; i++ {
 		go Consume("c"+strconv.Itoa(i), ch, wgc)
 	}
+	close(ch)
 	wgp.Wait() // Wait for all producers to finish.
 	wgc.Wait() // Wait for all consumer prints to finish.
-	close(ch)
 	fmt.Println("time:", time.Now().Sub(before))
 }
 
@@ -51,8 +51,8 @@ func Consume(id string, ch <-chan string, wg *sync.WaitGroup) {
 	for s := range ch {
 		fmt.Println(id, "received", s)
 		RandomSleep(100) // Simulate time to consume data.
-		wg.Done()
 	}
+	wg.Done()
 
 }
 

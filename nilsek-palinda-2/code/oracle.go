@@ -47,7 +47,6 @@ func Oracle() chan<- string {
 	// TODO: Answer questions.
 	// TODO: Make prophecies.
 	// TODO: Print answers.
-	// go getPrediction(questions, answers)
 	go prophecy("", answers)
 	go makeProphecies(questions, answers)
 	go printAnswers(answers)
@@ -60,23 +59,23 @@ func makeProphecies(questions chan string, answers chan string) {
 		case q := <-questions:
 			prophecy(q, answers)
 		default:
+			// Add a delay between prophecies, the common people doesn't
+			// deserve THAT many prophecies...
+			time.Sleep(time.Duration(20+rand.Intn(10)) * time.Second)
 			prophecy("", answers)
 		}
 	}
 }
 
 func printAnswers(answers chan string) {
-	for {
-		select {
-		case ans := <-answers:
+		for ans := range answers {
 			for _, c := range ans {
 				time.Sleep(time.Duration(50) * time.Millisecond)
 				fmt.Print(string(c))
 			}
+			fmt.Print("\n")
 		}
-		fmt.Print("\n")
-	}
-}
+} 
 
 // This is the oracle's secret algorithm.
 // It waits for a while and then sends a message on the answer channel.
@@ -98,7 +97,7 @@ func prophecy(question string, answer chan<- string) {
 	// Answer question or fortell a prophecy, in a given priority order
 	insultedAns, _ := regexp.MatchString("(?i)(fuck|damn|pussy)", question)
 	sassyAns, _ := regexp.MatchString("(?i)(could you|can you)", question)
-	giveAns, _ := regexp.MatchString("(?i)(what|tell|answer|me)", question)
+	giveAns, _ := regexp.MatchString("(?i)(what|could|answer)", question)
 	funnyAns, _ := regexp.MatchString("(?i)(ting goes skra|lava toes|lavatoes)", question)
 
 	if insultedAns {
@@ -115,7 +114,7 @@ func prophecy(question string, answer chan<- string) {
 			"Concentrate more on your achievements than your failures.",
 			"Once you feel nice about yourself, you have planted the first seed to develop self-confidence.",
 			"Your focus determines your reality.",
-			"Many of the truths we cling to depend greatly on our own point of view.",
+			"Many of the tru 	ths we cling to depend greatly on our own point of view.",
 			"I feel his presence. But he can also feel mine. He has come for me.",
 			"It is your choice, but I warn you not to underestimate my powers.",
 			"Patience, my friend. In time, he will seek *you* out, and when he does, you must bring him before me",
