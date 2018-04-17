@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 	"time"
+	//"sync"
 )
 
 func main() {
@@ -20,8 +21,8 @@ func main() {
 
 	for {
 		before := time.Now()
-		res := Get(server[0], client)
-		//res := MultiGet(server, client)
+		// res := Get(server[0], client)
+		res := MultiGet(server, client)
 		after := time.Now()
 		fmt.Println("Response:", res)
 		fmt.Println("Time:", after.Sub(before))
@@ -60,5 +61,21 @@ func Get(url string, client *http.Client) *Response {
 // If none of the servers answer before timeout, the response is 503
 // – Service unavailable.
 func MultiGet(urls []string, client *http.Client) *Response {
-	return nil // TODO
+	resChannel := make(chan *Response)
+	//var wg sync.WaitGroup
+	for i, url := range urls {
+		//wg.Add(1)
+		if i == 0 {
+			go func(url string) {
+				resChannel <- Get(url, client)
+			}(url)
+		} else {
+			go Get(url, client)
+		}
+		// wg.Done()
+	} 
+	res := <-resChannel
+	// wg.Wait()
+	return &Response{string(res.Body), res.StatusCode}
+	//return &response(string(body), res.StatusCode) // TODO
 }
