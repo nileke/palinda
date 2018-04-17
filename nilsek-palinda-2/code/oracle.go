@@ -47,7 +47,6 @@ func Oracle() chan<- string {
 	// TODO: Answer questions.
 	// TODO: Make prophecies.
 	// TODO: Print answers.
-	// go getPrediction(questions, answers)
 	go prophecy("", answers)
 	go makeProphecies(questions, answers)
 	go printAnswers(answers)
@@ -58,25 +57,46 @@ func makeProphecies(questions chan string, answers chan string) {
 	for {
 		select {
 		case q := <-questions:
-			prophecy(q, answers)
+			getAnswer(q, answers)
 		default:
+			// Add a delay between prophecies, the common people doesn't
+			// deserve THAT many prophecies...
+			time.Sleep(time.Duration(20+rand.Intn(10)) * time.Second)
 			prophecy("", answers)
 		}
 	}
 }
 
+func getAnswer(question string, answer chan string) {
+
+	// Answer question or fortell a prophecy, in a given priority order
+	insultedAns, _ := regexp.MatchString("(?i)(fuck|damn|pussy)", question)
+	sassyAns, _ := regexp.MatchString("(?i)(could you|can you)", question)
+	giveAns, _ := regexp.MatchString("(?i)(what|could|answer)", question)
+	funnyAns, _ := regexp.MatchString("(?i)(ting goes skra|lava toes|lavatoes)", question)
+
+	if insultedAns {
+		answer <- "You are a jittery little thing, are you not."
+	} else if sassyAns {
+		answer <- "I do not know, can I?"
+	} else if giveAns {
+		answer <- "The answer you are looking for lies within you."
+	} else if funnyAns {
+		answer <- "You have your moments. Not many of them, but you have them."
+	} else {
+		prophecy(question, answer)
+	}
+}
+
 func printAnswers(answers chan string) {
-	for {
-		select {
-		case ans := <-answers:
+		for ans := range answers {
 			for _, c := range ans {
 				time.Sleep(time.Duration(50) * time.Millisecond)
 				fmt.Print(string(c))
 			}
+			fmt.Print("\n")
 		}
-		fmt.Print("\n")
-	}
-}
+} 
 
 // This is the oracle's secret algorithm.
 // It waits for a while and then sends a message on the answer channel.
@@ -95,43 +115,27 @@ func prophecy(question string, answer chan<- string) {
 		}
 	}
 
-	// Answer question or fortell a prophecy, in a given priority order
-	insultedAns, _ := regexp.MatchString("(?i)(fuck|damn|pussy)", question)
-	sassyAns, _ := regexp.MatchString("(?i)(could you|can you)", question)
-	giveAns, _ := regexp.MatchString("(?i)(what|tell|answer|me)", question)
-	funnyAns, _ := regexp.MatchString("(?i)(ting goes skra|lava toes|lavatoes)", question)
-
-	if insultedAns {
-		answer <- "You are a jittery little thing, are you not."
-	} else if sassyAns {
-		answer <- "I do not know, can I?"
-	} else if giveAns {
-		answer <- "The answer you are looking for lies within you."
-	} else if funnyAns {
-		answer <- "You have your moments. Not many of them, but you have them."
-	} else {
-		// Can you find the source of the prophecies without cheating? :)
-		prediction := []string{
-			"Concentrate more on your achievements than your failures.",
-			"Once you feel nice about yourself, you have planted the first seed to develop self-confidence.",
-			"Your focus determines your reality.",
-			"Many of the truths we cling to depend greatly on our own point of view.",
-			"I feel his presence. But he can also feel mine. He has come for me.",
-			"It is your choice, but I warn you not to underestimate my powers.",
-			"Patience, my friend. In time, he will seek *you* out, and when he does, you must bring him before me",
-			"Everything is proceeding as I have foreseen.",
-			"Train yourself to let go of everything you fear to lose.",
-			"Always pass on what you have learned.",
-			"Greed can be a very powerful ally.",
-			"Sometimes we must let go of our pride and do what is requested of us.",
-			"Now, be brave and do not look back. Do not look back.",
-			"Who is more foolish? The fool or the fool who follows him?",
-			"Your eyes can deceive you; don't trust them.",
-			"Remember, concentrate on the moment.",
-			"In a dark place we find ourselves, and a little more knowledge lights our way.",
-		}
-		answer <- longestWord + "... " + prediction[rand.Intn(len(prediction))]
+	// Can you find the source of the prophecies without cheating? :)
+	prediction := []string{
+		"Concentrate more on your achievements than your failures.",
+		"Once you feel nice about yourself, you have planted the first seed to develop self-confidence.",
+		"Your focus determines your reality.",
+		"Many of the truths we cling to depend greatly on our own point of view.",
+		"I feel his presence. But he can also feel mine. He has come for me.",
+		"It is your choice, but I warn you not to underestimate my powers.",
+		"Patience, my friend. In time, he will seek *you* out, and when he does, you must bring him before me",
+		"Everything is proceeding as I have foreseen.",
+		"Train yourself to let go of everything you fear to lose.",
+		"Always pass on what you have learned.",
+		"Greed can be a very powerful ally.",
+		"Sometimes we must let go of our pride and do what is requested of us.",
+		"Now, be brave and do not look back. Do not look back.",
+		"Who is more foolish? The fool or the fool who follows him?",
+		"Your eyes can deceive you; don't trust them.",
+		"Remember, concentrate on the moment.",
+		"In a dark place we find ourselves, and a little more knowledge lights our way.",
 	}
+	answer <- longestWord + "... " + prediction[rand.Intn(len(prediction))]
 }
 
 func init() { // Functions called "init" are executed before the main function.
