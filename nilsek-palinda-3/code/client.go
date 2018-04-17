@@ -6,7 +6,7 @@ import (
 	"log"
 	"net/http"
 	"time"
-	//"sync"
+	"sync"
 )
 
 func main() {
@@ -56,26 +56,37 @@ func Get(url string, client *http.Client) *Response {
 	return &Response{string(body), res.StatusCode}
 }
 
+func CallServer(url string, client *http.Client) chan *Response {
+	response := make(chan *Response, 1)
+	go func() {
+		response <- Get(url, client)
+	}()
+	return response
+}
+
 // MultiGet makes an HTTP Get request to each url and returns
 // the response from the first server to answer with status code 200.
 // If none of the servers answer before timeout, the response is 503
 // – Service unavailable.
 func MultiGet(urls []string, client *http.Client) *Response {
-	resChannel := make(chan *Response)
-	//var wg sync.WaitGroup
-	for i, url := range urls {
-		//wg.Add(1)
-		if i == 0 {
-			go func(url string) {
-				resChannel <- Get(url, client)
-			}(url)
-		} else {
-			go Get(url, client)
-		}
-		// wg.Done()
-	} 
-	res := <-resChannel
-	// wg.Wait()
-	return &Response{string(res.Body), res.StatusCode}
-	//return &response(string(body), res.StatusCode) // TODO
+	ch := make(chan *Response, len(urls))
+	wg := new(sync.WaitGroup)
+	wg.add(len(urls))
+	for _, url := range urls {
+		go func() {
+			select{
+			case res := <- CallServer(url, client):
+				ch <-res
+			case <-time.After(10 * time.Second):
+				ch <-&Response{"Service unavailable\n", 503}
+			}
+			wg.Done()	
+		}()
+	}
+	wg.Wait()
+	return <-ch
 }
+	
+
+
+

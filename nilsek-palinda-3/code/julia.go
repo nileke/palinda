@@ -67,8 +67,8 @@ func Julia(f ComplexFunc, n int) image.Image {
 				b := uint8(n % 32 * 8)
 				img.Set(i, j, color.RGBA{r, g, b, 255})
 			}
+			wg.Done()
 		}(i)
-		wg.Done()
 	}
 	wg.Wait()
 	return img
