@@ -219,3 +219,6 @@ $RECYCLE.BIN/
 Session.vim
 .netrwhist
 *~
+
+# ignoring png created by julia.go
+*.png

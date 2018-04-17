@@ -12,6 +12,7 @@ import (
 func main() {
 	people := []string{"Anna", "Bob", "Cody", "Dave", "Eva"}
 	match := make(chan string, 1) // Make room for one unmatched send.
+	// var wg sync sync.WaitGroup
 	wg := new(sync.WaitGroup)
 	wg.Add(len(people))
 	for _, name := range people {
