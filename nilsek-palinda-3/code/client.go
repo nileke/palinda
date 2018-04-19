@@ -56,15 +56,6 @@ func Get(url string, client *http.Client) *Response {
 	return &Response{string(body), res.StatusCode}
 }
 
-func CallServer(url string, client *http.Client) *Response {
-	response := make(chan *Response, 1)
-	go func() {
-		response <- Get(url, client)
-	}()
-	
-	return <-response
-}
-
 // MultiGet makes an HTTP Get request to each url and returns
 // the response from the first server to answer with status code 200.
 // If none of the servers answer before timeout, the response is 503
@@ -73,20 +64,18 @@ func MultiGet(urls []string, client *http.Client, timeout time.Duration) (res *R
 	ch := make(chan *Response, len(urls))
 	for _, url := range urls {
 		go func() {
-			read := CallServer(url, client)
+			read := Get(url, client)
 			if read.StatusCode == 200 {
 				ch <-read
 			}
 		}()
 	}
-	select{
+	select {
 	case res = <- ch:
+		// Send response
 	case <-time.After(timeout):
 		res = &Response{"Service unavailable\n", 503}
 	}
 	return
 }
 	
-
-
-
