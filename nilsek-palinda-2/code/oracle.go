@@ -55,15 +55,10 @@ func Oracle() chan<- string {
 
 func makeProphecies(questions chan string, answers chan string) {
 	for {
-		select {
-		case q := <-questions:
-			getAnswer(q, answers)
-		default:
-			// Add a delay between prophecies, the common people doesn't
-			// deserve THAT many prophecies...
-			time.Sleep(time.Duration(20+rand.Intn(10)) * time.Second)
-			prophecy("", answers)
-		}
+		q := <- questions
+		go getAnswer(q, answers)
+		time.Sleep(time.Duration(50+rand.Intn(10)) * time.Second)
+		go prophecy("", answers)
 	}
 }
 
