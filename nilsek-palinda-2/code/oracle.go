@@ -44,9 +44,6 @@ func main() {
 func Oracle() chan<- string {
 	questions := make(chan string)
 	answers := make(chan string)
-	// TODO: Answer questions.
-	// TODO: Make prophecies.
-	// TODO: Print answers.
 	go prophecy("", answers)
 	go makeProphecies(questions, answers)
 	go printAnswers(answers)
@@ -55,10 +52,14 @@ func Oracle() chan<- string {
 
 func makeProphecies(questions chan string, answers chan string) {
 	for {
-		q := <- questions
-		go getAnswer(q, answers)
-		time.Sleep(time.Duration(50+rand.Intn(10)) * time.Second)
-		go prophecy("", answers)
+		// Keep them waiting. Pythia, the original oracle at Delphi,
+		// only gave prophecies on the seventh day of each month.
+		select {
+		case q := <-questions:
+			go getAnswer(q, answers)
+		case <-time.After(time.Duration(20+rand.Intn(10)) * time.Second):
+			go prophecy("", answers)
+		}
 	}
 }
 
@@ -79,23 +80,22 @@ func getAnswer(question string, answer chan string) {
 	} else if funnyAns {
 		answer <- "You have your moments. Not many of them, but you have them."
 	} else {
-		prophecy(question, answer)
+		go prophecy(question, answer)
 	}
 }
 
 func printAnswers(answers chan string) {
-		for ans := range answers {
-			for _, c := range ans {
-				time.Sleep(time.Duration(50) * time.Millisecond)
-				fmt.Print(string(c))
-			}
-			fmt.Print("\n")
+	for ans := range answers {
+		for _, c := range ans {
+			time.Sleep(time.Duration(50) * time.Millisecond)
+			fmt.Print(string(c))
 		}
-} 
+		fmt.Print("\n")
+	}
+}
 
 // This is the oracle's secret algorithm.
 // It waits for a while and then sends a message on the answer channel.
-// TODO: make it better.
 func prophecy(question string, answer chan<- string) {
 	// Keep them waiting. Pythia, the original oracle at Delphi,
 	// only gave prophecies on the seventh day of each month.
